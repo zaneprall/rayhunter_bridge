@@ -23,6 +23,7 @@ options:
   mqtt_port: 1883
   mqtt_user: ""
   mqtt_pass: ""
+  discovery_prefix: "homeassistant"
   poll_interval: 3
   http_timeout: 3
   http_retries: 3
@@ -38,6 +39,7 @@ schema:
   mqtt_port: int
   mqtt_user: str
   mqtt_pass: str
+  discovery_prefix: str
   poll_interval: int
   http_timeout: float
   http_retries: int

@@ -43,7 +43,7 @@ It is designed to run directly on **Home Assistant OS** (I used a Raspberry Pi 4
 | `http_backoff_base` | float  | `0.4`             | Backoff multiplier between retries. |
 | `device_id`         | str    | `rayhunter_orbic` | Device ID for MQTT discovery. |
 | `device_name`       | str    | `Rayhunter (Orbic)` | Display name in HA. |
-| `adb_serial`        | str    | *(empty)*         | Optional, only needed if multiple Android devices are connected. |
+| `adb_serial`        | str    | *(empty)*         | Optional, only needed if multiple ADB targets are connected. |
 | `alert_on_new`      | bool   | `false`           | If enabled, the add-on will trigger binary_sensor.rayhunter_alert only when the warningCount from /api/system-stats increases compared to the last poll.”  |
 | `force_alert_secs`  | int    | `0`               | Force alert active if last change was within this many seconds. |
 | `autoclear_secs`    | int    | `0`               | Automatically clear alert after this many seconds. |
@@ -52,7 +52,7 @@ It is designed to run directly on **Home Assistant OS** (I used a Raspberry Pi 4
 
 ## USB Access
 
-Make sure your Rayhunter is connected via USB and **USB Debugging** is enabled. The add-on runs `adb start-server` automatically and will keep the port-forward alive.
+Make sure your Rayhunter is connected via USB and ADB access is enabled on the device. The add-on runs `adb start-server` automatically and will keep the port-forward alive.
 
 ---
 

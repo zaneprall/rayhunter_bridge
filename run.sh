@@ -36,7 +36,7 @@ if [ -n "${MQTT_HOST:-}" ]; then
 fi
 
 bashio::log.info "MQTT target: ${MQTT_HOST:-<disabled>}:${MQTT_PORT:-}"
-bashio::log.info "Device: ${DEVICE_NAME} (id=${DEVICE_ID})  Serial: ${ADB_SERIAL:-auto}"
+bashio::log.info "Device: ${DEVICE_NAME} (id=${DEVICE_ID})  ADB serial: ${ADB_SERIAL:-auto}"
 
 # ---- USB diagnostics (one-time) ----
 bashio::log.info "USB devices:"
@@ -46,22 +46,45 @@ ls -l /dev/bus/usb || true
 
 # ---- ADB forward keeper ----
 adb start-server || true
-ADB_BASE_CMD="adb"
-[ -n "${ADB_SERIAL:-}" ] && ADB_BASE_CMD="adb -s ${ADB_SERIAL}"
+
+pick_serial() {
+  # Prefer configured serial; otherwise pick the first available ADB target.
+  if [ -n "${ADB_SERIAL:-}" ]; then
+    echo "${ADB_SERIAL}"
+    return 0
+  fi
+  adb devices 2>/dev/null     | awk 'NR>1 && $1!="" {print $1; exit}'
+}
+
+forward_exists() {
+  local serial="$1"
+  if [ -n "${serial}" ]; then
+    adb forward --list 2>/dev/null       | awk -v s="${serial}" '$1==s && $2=="tcp:18080" && $3=="tcp:8080"{found=1} END{exit(found?0:1)}'
+  else
+    adb forward --list 2>/dev/null       | awk '$2=="tcp:18080" && $3=="tcp:8080"{found=1} END{exit(found?0:1)}'
+  fi
+}
+
+ensure_forward() {
+  local serial="$1"
+  if [ -n "${serial}" ]; then
+    adb -s "${serial}" forward tcp:18080 tcp:8080
+  else
+    adb forward tcp:18080 tcp:8080
+  fi
+}
 
 keep_forward() {
   while true; do
-    if ${ADB_BASE_CMD} forward --list 2>/dev/null | grep -q 'tcp:18080'; then
+    ACTIVE_SERIAL="$(pick_serial || true)"
+
+    if forward_exists "${ACTIVE_SERIAL}"; then
       :
     else
-      adb kill-server || true
-      sleep 1
-      adb start-server || true
-      ${ADB_BASE_CMD} forward --remove-all || true
-      if ${ADB_BASE_CMD} forward tcp:18080 tcp:8080 ; then
-        bashio::log.info "Port-forward 18080->8080 (serial=${ADB_SERIAL:-auto})"
+      if ensure_forward "${ACTIVE_SERIAL}"; then
+        bashio::log.info "Port-forward 18080->8080 active${ACTIVE_SERIAL:+ (serial=${ACTIVE_SERIAL})}"
       else
-        bashio::log.warning "adb forward failed (serial=${ADB_SERIAL:-auto}); will retry"
+        bashio::log.warning "adb forward failed${ACTIVE_SERIAL:+ (serial=${ACTIVE_SERIAL})}; will retry"
       fi
     fi
     sleep 5
