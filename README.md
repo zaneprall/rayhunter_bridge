@@ -1,6 +1,6 @@
 # Rayhunter Bridge Add-on for Home Assistant OS (WIP)
 
-This add-on connects an **Orbic Rayhunter** device to **Home Assistant** over USB, using `adb` port-forwarding to pull live system statistics from the Rayhunter's internal API and publish them via MQTT.
+This add-on connects an **Orbic Rayhunter** device to **Home Assistant** over USB, using `adb` port-forwarding to pull live system statistics from the Rayhunter's internal API and publish them via MQTT. Please note this is currently a WIP and not currently functional.
 
 It is designed to run directly on **Home Assistant OS** (I used a Raspberry Pi 4) as a supervised add-on. It requires a wired USB connection to the Rayhunter device and an MQTT broker (e.g., the official `core-mosquitto` add-on).
 
