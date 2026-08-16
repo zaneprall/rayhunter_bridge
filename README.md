@@ -1,74 +1,153 @@
-# Rayhunter Bridge Add-on for Home Assistant OS (WIP)
+# Rayhunter for Home Assistant
 
-This add-on connects an **Orbic Rayhunter** device to **Home Assistant** over USB, using `adb` port-forwarding to pull live system statistics from the Rayhunter's internal API and publish them via MQTT. Please note this is currently a WIP and not currently functional.
+Home Assistant support for the EFF Rayhunter running on an Orbic RC400L.
 
-It is designed to run directly on **Home Assistant OS** (I used a Raspberry Pi 4) as a supervised add-on. It requires a wired USB connection to the Rayhunter device and an MQTT broker (e.g., the official `core-mosquitto` add-on).
+This repository contains:
 
----
+- A Home Assistant app that connects to the Orbic over USB/ADB.
+- A custom Home Assistant integration that exposes Rayhunter state as native Home Assistant entities.
+- No MQTT or Mosquitto dependency.
 
-## Features
+## Architecture
 
-- Automatic `adb` port-forwarding (`tcp:18080 → tcp:8080`) to the Rayhunter's local API.
-- Polls `/api/system-stats` for real-time warning counts.
-- Publishes state and binary sensor entities to MQTT for discovery in Home Assistant.
-- MQTT Last Will & Testament (LWT) for entity availability.
-- Optional alert debouncing, forced alerts, and auto-clear timers.
-- Runs entirely as a Home Assistant OS add-on — no host modifications required.
+Orbic RC400L
+    |
+    | USB / ADB
+    v
+Rayhunter Bridge app
+    |
+    | Rayhunter HTTP API
+    v
+Home Assistant custom integration
 
----
+The bridge maintains an ADB port-forward to Rayhunter and exposes a read-only API on Home Assistant's internal app network.
+
+## Tested with
+
+- Home Assistant OS
+- Raspberry Pi 4
+- Orbic RC400L
+- EFF Rayhunter 0.12.0
+- Home Assistant 2026.8.x
+
+## Home Assistant entities
+
+Primary entities:
+
+- Active warning
+- Recording
+- Plugged in
+- Warning severity
+
+Diagnostic entities include:
+
+- Battery
+- Bridge data
+- Completed recordings
+- Current recording
+- Current recording compressed
+- Current recording GPS mode
+- Current recording last message
+- Current recording size
+- Current recording start
+- Disk free
+- Disk total
+- Disk used
+- Disk used percentage
+- Last warning
+- Last warning time
+- Memory free
+- Memory total
+- Memory used
+- Total recordings
+- Warning count
+
+Storage and memory values are presented using KiB/MiB units.
+
+## Warning behavior
+
+Rayhunter event severities are:
+
+Informational
+Low
+Medium
+High
+
+Informational is considered safe.
+
+Any Low, Medium, or High event in the current recording causes Active warning to become unsafe.
+
+The highest observed warning level becomes Warning severity.
+
+Starting a new Rayhunter recording resets the per-recording warning state.
+
+## Failure behavior
+
+If USB, ADB, Rayhunter, or the bridge API becomes unavailable, Home Assistant marks the Rayhunter entities Unavailable rather than falsely reporting a safe state.
 
 ## Installation
 
-1. **Clone or copy this repository** into your Home Assistant OS add-ons folder: /addons/rayhunter-bridge/
+Add this repository to the Home Assistant App Store:
 
-2. In the HA UI:
-- Go to **Settings → Add-ons → Add-on Store → ••• → Repositories**.
-- Add the local path containing this repository.
+https://github.com/zaneprall/rayhunter_bridge
 
-3. Open the **Rayhunter Bridge** add-on and click **Install**.
+Install Rayhunter Bridge and connect the Orbic to the Home Assistant host over USB.
 
----
+ADB must be enabled on the Orbic.
 
-## Configuration
+The app publishes Supervisor discovery information so Home Assistant can determine the app's internal address automatically.
 
-| Option              | Type   | Default           | Description |
-|---------------------|--------|-------------------|-------------|
-| `mqtt_host`         | str    | `core-mosquitto`  | MQTT broker hostname/IP. |
-| `mqtt_port`         | int    | `1883`            | MQTT broker port. |
-| `mqtt_user`         | str    | *(empty)*         | MQTT username. |
-| `mqtt_pass`         | str    | *(empty)*         | MQTT password. |
-| `poll_interval`     | int    | `3`               | Seconds between API polls. |
-| `http_timeout`      | float  | `3`               | HTTP request timeout (seconds). |
-| `http_retries`      | int    | `3`               | Retries before giving up. |
-| `http_backoff_base` | float  | `0.4`             | Backoff multiplier between retries. |
-| `device_id`         | str    | `rayhunter_orbic` | Device ID for MQTT discovery. |
-| `device_name`       | str    | `Rayhunter (Orbic)` | Display name in HA. |
-| `adb_serial`        | str    | *(empty)*         | Optional, only needed if multiple Android devices are connected. |
-| `alert_on_new`      | bool   | `false`           | If enabled, the add-on will trigger binary_sensor.rayhunter_alert only when the warningCount from /api/system-stats increases compared to the last poll.”  |
-| `force_alert_secs`  | int    | `0`               | Force alert active if last change was within this many seconds. |
-| `autoclear_secs`    | int    | `0`               | Automatically clear alert after this many seconds. |
+## Custom integration
 
----
+The Home Assistant integration is included at:
 
-## USB Access
+custom_components/rayhunter
 
-Make sure your Rayhunter is connected via USB and **USB Debugging** is enabled. The add-on runs `adb start-server` automatically and will keep the port-forward alive.
+For now, copy that directory to:
 
----
+/config/custom_components/rayhunter
 
-## Home Assistant Entities
+and restart Home Assistant Core.
 
-After install and configuration, you’ll see:
-- `binary_sensor.rayhunter_alert` — active when alert is triggered.
-- `sensor.rayhunter_last_report_id` — last processed report ID.
-- `sensor.rayhunter_last_warning_count` — most recent warning count.
+The integration can also be configured manually if Supervisor discovery is unavailable.
 
-Entities are auto-discovered via MQTT.
+## Bridge API
 
----
+The bridge exposes these internal endpoints:
 
-## Development
+GET /api/status
+GET /api/raw
+GET /healthz
 
-Build locally for HA OS:
-```bash
-docker build -t local/rayhunter-bridge .
+/api/status provides the bounded state consumed by Home Assistant.
+
+/api/raw provides the complete upstream Rayhunter system-statistics and QMDL-manifest responses for diagnostics.
+
+## Repository layout
+
+rayhunter_bridge/
+├── repository.yaml
+├── README.md
+├── LICENSE
+├── custom_components/
+│   └── rayhunter/
+└── rayhunter_bridge/
+    ├── config.yaml
+    ├── Dockerfile
+    ├── README.md
+    ├── rayhunter_bridge.py
+    └── run.sh
+
+## Versions
+
+Rayhunter Bridge app:       1.1.2
+Home Assistant integration: 0.3.2
+EFF Rayhunter tested:       0.12.0
+
+## Attribution
+
+Rayhunter is developed by the Electronic Frontier Foundation:
+
+https://github.com/EFForg/rayhunter
+
+This project is independent and is not maintained or endorsed by EFF.

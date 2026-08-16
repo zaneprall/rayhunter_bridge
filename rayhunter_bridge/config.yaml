@@ -1,0 +1,44 @@
+name: Rayhunter Bridge
+version: "1.1.2"
+slug: rayhunter-bridge
+description: USB/ADB bridge exposing EFF Rayhunter state to Home Assistant
+url: https://github.com/zaneprall/rayhunter_bridge
+ingress: false
+
+arch:
+  - aarch64
+  - amd64
+
+host_network: false
+
+init: false
+startup: services
+stage: experimental
+
+usb: true
+udev: true
+
+# Advertise the bridge to the Rayhunter Home Assistant integration.
+discovery:
+  - rayhunter
+
+# Known-working capability set.
+# Privilege reduction will be tested separately.
+privileged:
+  - SYS_ADMIN
+
+options:
+  http_timeout: 3
+  http_retries: 3
+  http_backoff_base: 0.4
+  device_id: "rayhunter_orbic"
+  device_name: "Rayhunter (Orbic)"
+  adb_serial: ""
+
+schema:
+  http_timeout: float
+  http_retries: int
+  http_backoff_base: float
+  device_id: str
+  device_name: str
+  adb_serial: str

@@ -1,0 +1,16 @@
+{
+  "domain": "rayhunter",
+  "name": "Rayhunter",
+  "version": "0.3.2",
+  "config_flow": true,
+  "documentation": "https://github.com/zaneprall/rayhunter_bridge",
+  "issue_tracker": "https://github.com/zaneprall/rayhunter_bridge/issues",
+  "codeowners": [
+    "@zaneprall"
+  ],
+  "dependencies": [],
+  "requirements": [],
+  "iot_class": "local_polling",
+  "integration_type": "device",
+  "single_config_entry": true
+}
