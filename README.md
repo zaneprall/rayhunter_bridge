@@ -46,7 +46,13 @@ The bridge communicates directly with Rayhunter's HTTP API. MQTT, Mosquitto, and
            ▼
 ┌─────────────────────┐
 │ Home Assistant      │
-│ Devices & Entities  │
+│ Device & Entities   │
+└─────────────────────┘
+           │
+           ▼
+┌─────────────────────┐
+│ Your automation     │
+│                     │
 └─────────────────────┘
 ```
 
