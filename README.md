@@ -209,8 +209,9 @@ For now, copy that directory into:
 /config/custom_components/rayhunter
 ```
 
+```text
 cp -a custom_components/rayhunter /config/custom_components/
-
+```
 
 Then restart Home Assistant Core.
 
