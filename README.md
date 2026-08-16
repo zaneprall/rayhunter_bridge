@@ -313,7 +313,7 @@ If any of the following become unavailable:
 - Rayhunter HTTP API
 - Rayhunter Bridge API
 
-the Home Assistant coordinator marks Rayhunter entities as **Unavailable**.
+the Home Assistant coordinator marks Rayhunter entities as **Unavailable**. Check the logs first. 
 
 A broken connection therefore cannot silently appear as a safe cellular environment.
 
@@ -365,11 +365,11 @@ rayhunter_bridge/
 
 ---
 
-## Development Status
+## Development Progress
 
 The core integration is functional and has been tested end-to-end with a physical Orbic RC400L running Rayhunter.
 
-Confirmed functionality includes:
+current functionality includes:
 
 - USB detection
 - ADB connection
