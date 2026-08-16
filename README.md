@@ -175,19 +175,34 @@ amd64
 
 ## Installation
 
-### 1. Add the app repository
+### 1. Install the Rayhunter Bridge app
+
+
+### Option A: Add this repository to the Home Assistant App Store
 
 In Home Assistant, open:
 
-**Settings → Apps → App Store → Repositories**
+Settings → Apps → App Store → Repositories
 
 Add:
 
-```text
 https://github.com/zaneprall/rayhunter_bridge
-```
 
-Install **Rayhunter Bridge**.
+Then install **Rayhunter Bridge**.
+
+
+### Option B: Clone the repository locally
+
+From the Home Assistant SSH/Terminal environment:
+
+git clone https://github.com/zaneprall/rayhunter_bridge.git /addons/rayhunter-bridge
+
+Then reload the Home Assistant App Store:
+
+ha store reload
+
+The local Rayhunter Bridge app should then appear in the App Store and can be installed normally.
+
 
 ### 2. Connect the Orbic
 
