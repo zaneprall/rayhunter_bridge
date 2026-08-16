@@ -494,8 +494,12 @@ current functionality includes:
 - severity reporting
 - recovery to a safe state after starting a new recording
 - recovers from hotplugging the orbic
----
 
+
+If you are in Europe, The middle East, or Africa and looking to get a similar configuration working on the TP-Link M7350, please contact me,
+I'd love to contribute however I can. 
+
+if you happen to have a TP-Link M7350 and are willing to donate the device in order for me to support it, please reach out. 
 ## Rayhunter
 
 [Rayhunter](https://github.com/EFForg/rayhunter) is an open-source project from the Electronic Frontier Foundation for detecting potentially suspicious cellular-network behavior.
