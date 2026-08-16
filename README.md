@@ -12,7 +12,7 @@
 
 ## Overview
 
-**Rayhunter for Home Assistant** connects an EFF Rayhunter device directly to Home Assistant OS.
+**Rayhunter for Home Assistant** connects an EFF Rayhunter device (the orbic one. Sorry Europeans.) directly to Home Assistant OS.
 
 The project consists of two pieces:
 
@@ -217,15 +217,16 @@ The Home Assistant integration is included in this repository:
 ```text
 custom_components/rayhunter
 ```
-
-For now, copy that directory into:
-
+> [!WARNING]
+> these files must be moved to the following directory for the integration to work
 ```text
 /config/custom_components/rayhunter
 ```
-
+This can be done from the included terminal:
 ```text
-cp -a custom_components/rayhunter /config/custom_components/
+cd /rayhunter_bridge # navigate to the directory you have the program in. If you used install option 1.A; then it may be in /addons
+
+cp -a custom_components/rayhunter /config/custom_components/ #move the integration components into the correct file
 ```
 
 Then restart Home Assistant Core.
@@ -241,46 +242,179 @@ The app publishes Supervisor discovery information, allowing Home Assistant to d
 Manual integration configuration remains available as a fallback.
 
 ---
+## API Examples
 
-## Bridge API
+The Rayhunter Bridge exposes a small read-only HTTP API on port `8099`.
 
-Rayhunter Bridge exposes a small read-only HTTP API internally to Home Assistant.
+### Health check
 
-### `GET /api/status`
-
-Returns the bounded state used by the Home Assistant integration.
-
-Includes:
-
-- Rayhunter availability
-- recording state
-- warning state
-- battery state
-- system statistics
-- current recording metadata
-- Rayhunter runtime metadata
-
-### `GET /api/raw`
-
-Returns the upstream Rayhunter system-statistics and QMDL-manifest responses for diagnostics.
-
-Home Assistant does not continuously poll this endpoint because the historical manifest can grow over time.
-
-### `GET /healthz`
-
-Simple bridge health endpoint.
+GET `/healthz`
 
 Example:
+```text
+curl http://local-rayhunter-bridge:8099/healthz
+```
+Example response:
 
-```json
+{"ok":true,"api_version":1,"bridge_version":"1.1.1"}
+
+
+### Current status
+
+GET `/api/status`
+
+Example:
+```text
+curl http://local-rayhunter-bridge:8099/api/status
+```
+Pretty-printed with jq:
+```text
+curl -s http://local-rayhunter-bridge:8099/api/status | jq
+```
+This endpoint returns the bounded state used by Home Assistant, including:
+
+- device availability
+- recording state
+- warning state and severity
+- battery state
+- disk and memory statistics
+- Rayhunter runtime information
+- current recording metadata
+
+Example response:
+```text
 {
-  "ok": true,
   "api_version": 1,
-  "bridge_version": "1.1.1"
-}
+  "bridge_version": "1.1.1",
+  "device_id": "rayhunter_orbic",
+  "device_name": "Rayhunter (Orbic)",
+  "available": true,
+  "recording": true,
+  "current_recording": "1786861508",
+  "completed_recording_count": 5,
+  "total_recording_count": 6,
+  "active_warning": false,
+  "severity": "clear",
+  "warning_count": 0,
+  "last_warning": null,
+  "last_warning_time": null,
+  "report_version": 2,
+  "battery_level": 100,
+  "plugged_in": true,
+  "rayhunter_version": "0.12.0",
+  "system_os": "Linux 3.18.48",
+  "arch": "armv7l",
+  "disk_stats": {
+    "partition": "/data/rayhunter/qmdl",
+    "total_size": "214.7M",
+    "used_size": "10.2M",
+    "available_size": "204.5M",
+    "used_percent": "4%",
+    "mounted_on": "/data/rayhunter/qmdl",
+    "available_bytes": 214437888
+  },
+  "memory_stats": {
+    "total": "159.9M",
+    "used": "137.3M",
+    "free": "22.6M"
+  },
+  "runtime_metadata": {
+    "rayhunter_version": "0.12.0",
+    "system_os": "Linux 3.18.48",
+    "arch": "armv7l"
+  },
+  "battery_status": {
+    "level": 100,
+    "is_plugged_in": true
+  },
+  "current_entry": {
+    "name": "1786861508",
+    "start_time": "2026-08-16T02:25:08.001508736-04:00",
+    "last_message_time": "2026-08-16T05:27:26.336820189-04:00",
+    "qmdl_size_bytes": 456039,
+    "rayhunter_version": "0.12.0",
+    "system_os": "Linux 3.18.48",
+    "arch": "armv7l",
+    "stop_reason": null,
+    "upload_time": null,
+    "gps_mode": 0,
+    "compressed": true
+  },
+  "latest_completed_entry": {
+    "name": "1786861493",
+    "start_time": "2026-08-16T02:24:53.811125408-04:00",
+    "last_message_time": "2026-08-16T02:25:07.457202851-04:00",
+    "qmdl_size_bytes": 630,
+    "rayhunter_version": "0.12.0",
+    "system_os": "Linux 3.18.48",
+    "arch": "armv7l",
+    "stop_reason": null,
+    "upload_time": null,
+    "gps_mode": 0,
+    "compressed": true
+  },
+  "source_endpoints": [
+    "/api/system-stats",
+    "/api/qmdl-manifest",
+    "/api/analysis-report/live"
+  ]
 ```
 
----
+### Raw Rayhunter data
+
+GET `/api/raw`
+
+Example:
+```text
+curl -s http://local-rayhunter-bridge:8099/api/raw | jq
+```
+This endpoint returns the full upstream responses from:
+
+- `/api/system-stats`
+- `/api/qmdl-manifest`
+
+Unlike `/api/status`, this data is not bounded and may grow as additional recordings accumulate.
+
+
+### Check only warning state
+```text
+curl -s http://local-rayhunter-bridge:8099/api/status | jq '{
+  active_warning,
+  severity,
+  warning_count,
+  last_warning,
+  last_warning_time
+}'
+```
+
+### Check recording state
+```text
+curl -s http://local-rayhunter-bridge:8099/api/status | jq '{
+  recording,
+  current_recording,
+  completed_recording_count,
+  total_recording_count
+}'
+```
+
+### Check battery and system health
+```text
+curl -s http://local-rayhunter-bridge:8099/api/status | jq '{
+  battery_level,
+  plugged_in,
+  disk_stats,
+  memory_stats
+}'
+```
+
+### Check Rayhunter version
+```text
+curl -s http://local-rayhunter-bridge:8099/api/status | jq '{
+  rayhunter_version,
+  system_os,
+  arch
+}'
+```
 
 ## Failure Handling
 
@@ -295,8 +429,6 @@ If any of the following become unavailable:
 - Rayhunter Bridge API
 
 the Home Assistant coordinator marks Rayhunter entities as **Unavailable**. Check the logs first. 
-
-A broken connection therefore cannot silently appear as a safe cellular environment.
 
 ---
 
@@ -362,9 +494,7 @@ current functionality includes:
 - live warning detection
 - severity reporting
 - recovery to a safe state after starting a new recording
-
-Further cleanup and packaging improvements are ongoing.
-
+- recovers from hotplugging the orbic
 ---
 
 ## Rayhunter
