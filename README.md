@@ -58,49 +58,13 @@ The bridge communicates directly with Rayhunter's HTTP API. MQTT, Mosquitto, and
 
 ---
 
-## Screenshots
 
-### Device overview
 
-<!--
-Add your screenshot as:
-docs/images/device-overview.png
+![Rayhunter device overview](Deviceinfo.png)
 
-Then uncomment:
 
-![Rayhunter device overview](docs/images/device-overview.png)
--->
 
-_Screenshot: Rayhunter device and primary entities in Home Assistant._
-
-### Warning detection
-
-<!--
-Add your screenshot as:
-docs/images/warning-detected.png
-
-Then uncomment:
-
-![Rayhunter warning detected](docs/images/warning-detected.png)
--->
-
-_Screenshot: Rayhunter reporting an active cellular warning._
-
-### Diagnostics
-
-<!--
-Add your screenshot as:
-docs/images/diagnostics.png
-
-Then uncomment:
-
-![Rayhunter diagnostics](docs/images/diagnostics.png)
--->
-
-_Screenshot: recording, storage, memory, battery, and Rayhunter diagnostics._
-
----
-
+![Rayhunter entity](tool.png)
 ## Features
 
 - Direct USB connection between Home Assistant OS and the Orbic RC400L
