@@ -21,6 +21,10 @@ The project consists of two pieces:
 
 The bridge communicates directly with Rayhunter's HTTP API. MQTT, Mosquitto, and external message brokers are not required.
 
+
+![Rayhunter device overview](Deviceinfo.png)
+
+
 ### Architecture
 
 ```text
@@ -57,12 +61,6 @@ The bridge communicates directly with Rayhunter's HTTP API. MQTT, Mosquitto, and
 ```
 
 ---
-
-
-
-![Rayhunter device overview](Deviceinfo.png)
-
-
 
 ![Rayhunter entity](tool.png)
 ## Features
