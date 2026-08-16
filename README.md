@@ -224,9 +224,8 @@ custom_components/rayhunter
 ```
 This can be done from the included terminal:
 ```text
-cd /rayhunter_bridge # navigate to the directory you have the program in. If you used install option 1.A; then it may be in /addons
-
-cp -a custom_components/rayhunter /config/custom_components/ #move the integration components into the correct file
+cd /addons/rayhunter_bridge # navigate to the directory you have the program in.
+cp -a custom_components/rayhunter /config/custom_components/ #move the integration components into the correct directory
 ```
 
 Then restart Home Assistant Core.
