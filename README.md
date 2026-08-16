@@ -1,153 +1,393 @@
 # Rayhunter for Home Assistant
 
-Home Assistant support for the EFF Rayhunter running on an Orbic RC400L.
+<p align="center">
+  Home Assistant integration for the EFF Rayhunter running on an Orbic RC400L.
+</p>
 
-This repository contains:
+<p align="center">
+  USB/ADB connection · Native Home Assistant entities · No MQTT required
+</p>
 
-- A Home Assistant app that connects to the Orbic over USB/ADB.
-- A custom Home Assistant integration that exposes Rayhunter state as native Home Assistant entities.
-- No MQTT or Mosquitto dependency.
+---
 
-## Architecture
+## Overview
 
-Orbic RC400L
-    |
-    | USB / ADB
-    v
-Rayhunter Bridge app
-    |
-    | Rayhunter HTTP API
-    v
-Home Assistant custom integration
+**Rayhunter for Home Assistant** connects an EFF Rayhunter device directly to Home Assistant OS.
 
-The bridge maintains an ADB port-forward to Rayhunter and exposes a read-only API on Home Assistant's internal app network.
+The project consists of two pieces:
 
-## Tested with
+- **Rayhunter Bridge** — a Home Assistant app that manages USB access, ADB, port forwarding, and communication with Rayhunter.
+- **Rayhunter Integration** — a native Home Assistant custom integration that turns Rayhunter state into devices, sensors, and binary sensors.
 
-- Home Assistant OS
-- Raspberry Pi 4
-- Orbic RC400L
-- EFF Rayhunter 0.12.0
-- Home Assistant 2026.8.x
+The bridge communicates directly with Rayhunter's HTTP API. MQTT, Mosquitto, and external message brokers are not required.
 
-## Home Assistant entities
+### Architecture
 
-Primary entities:
+```text
+┌─────────────────────┐
+│    Orbic RC400L     │
+│   EFF Rayhunter     │
+└──────────┬──────────┘
+           │
+           │ USB / ADB
+           ▼
+┌─────────────────────┐
+│  Rayhunter Bridge   │
+│ Home Assistant App  │
+└──────────┬──────────┘
+           │
+           │ Internal HTTP API
+           ▼
+┌─────────────────────┐
+│     Rayhunter       │
+│  HA Integration     │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│ Home Assistant      │
+│ Devices & Entities  │
+└─────────────────────┘
+```
 
-- Active warning
-- Recording
-- Plugged in
-- Warning severity
+---
 
-Diagnostic entities include:
+## Screenshots
 
-- Battery
-- Bridge data
-- Completed recordings
+### Device overview
+
+<!--
+Add your screenshot as:
+docs/images/device-overview.png
+
+Then uncomment:
+
+![Rayhunter device overview](docs/images/device-overview.png)
+-->
+
+_Screenshot: Rayhunter device and primary entities in Home Assistant._
+
+### Warning detection
+
+<!--
+Add your screenshot as:
+docs/images/warning-detected.png
+
+Then uncomment:
+
+![Rayhunter warning detected](docs/images/warning-detected.png)
+-->
+
+_Screenshot: Rayhunter reporting an active cellular warning._
+
+### Diagnostics
+
+<!--
+Add your screenshot as:
+docs/images/diagnostics.png
+
+Then uncomment:
+
+![Rayhunter diagnostics](docs/images/diagnostics.png)
+-->
+
+_Screenshot: recording, storage, memory, battery, and Rayhunter diagnostics._
+
+---
+
+## Features
+
+- Direct USB connection between Home Assistant OS and the Orbic RC400L
+- Automatic ADB device detection
+- Persistent ADB port forwarding to the Rayhunter API
+- Native Home Assistant device and entity model
+- Live Rayhunter warning state
+- Warning severity tracking
+- Recording state and metadata
+- Battery and charging status
+- Storage statistics
+- Memory statistics
+- Rayhunter runtime information
+- Home Assistant Supervisor discovery
+- Automatic unavailable state if communication fails
+- No MQTT dependency
+- No cloud dependency
+
+---
+
+## Home Assistant Entities
+
+### Primary
+
+| Entity | Description |
+|---|---|
+| **Active warning** | Indicates whether Rayhunter has detected a Low, Medium, or High severity event |
+| **Warning severity** | Highest warning severity observed during the current recording |
+| **Recording** | Indicates whether Rayhunter is currently recording |
+| **Plugged in** | Orbic external-power state |
+
+### Diagnostics
+
+The integration also exposes:
+
+- Battery level
+- Bridge version and bridge data
 - Current recording
-- Current recording compressed
-- Current recording GPS mode
-- Current recording last message
+- Current recording start time
 - Current recording size
-- Current recording start
-- Disk free
-- Disk total
-- Disk used
-- Disk used percentage
+- Current recording last-message time
+- Current recording GPS mode
+- Current recording compression state
+- Completed recording count
+- Total recording count
+- Warning count
 - Last warning
 - Last warning time
-- Memory free
+- Disk total
+- Disk used
+- Disk free
+- Disk usage percentage
 - Memory total
 - Memory used
-- Total recordings
-- Warning count
+- Memory free
 
-Storage and memory values are presented using KiB/MiB units.
+Storage and memory values use Home Assistant-native KiB/MiB units.
 
-## Warning behavior
+---
 
-Rayhunter event severities are:
+## Warning Behavior
 
+Rayhunter reports four event severities:
+
+```text
 Informational
 Low
 Medium
 High
+```
 
-Informational is considered safe.
+For Home Assistant:
 
-Any Low, Medium, or High event in the current recording causes Active warning to become unsafe.
+- **Informational** does not activate the warning sensor.
+- **Low**, **Medium**, and **High** activate `Active warning`.
+- `Warning severity` reflects the highest warning observed during the current recording.
+- Starting a new recording resets the current warning state.
 
-The highest observed warning level becomes Warning severity.
+If communication with Rayhunter is lost, the integration becomes **Unavailable** instead of incorrectly reporting a safe state.
 
-Starting a new Rayhunter recording resets the per-recording warning state.
+---
 
-## Failure behavior
+## Requirements
 
-If USB, ADB, Rayhunter, or the bridge API becomes unavailable, Home Assistant marks the Rayhunter entities Unavailable rather than falsely reporting a safe state.
+This project is currently designed and tested around:
+
+- Home Assistant OS
+- Raspberry Pi 4
+- Orbic RC400L
+- EFF Rayhunter
+- USB connection between the Home Assistant host and Orbic
+- ADB enabled on the Orbic
+
+Current tested Rayhunter version:
+
+```text
+0.12.0
+```
+
+Other Home Assistant OS hardware may work as long as USB passthrough and the required architecture are supported.
+
+The bridge currently supports:
+
+```text
+aarch64
+amd64
+```
+
+---
 
 ## Installation
 
-Add this repository to the Home Assistant App Store:
+### 1. Add the app repository
 
+In Home Assistant, open:
+
+**Settings → Apps → App Store → Repositories**
+
+Add:
+
+```text
 https://github.com/zaneprall/rayhunter_bridge
+```
 
-Install Rayhunter Bridge and connect the Orbic to the Home Assistant host over USB.
+Install **Rayhunter Bridge**.
 
-ADB must be enabled on the Orbic.
+### 2. Connect the Orbic
 
-The app publishes Supervisor discovery information so Home Assistant can determine the app's internal address automatically.
+Connect the Orbic RC400L directly to the Home Assistant host over USB.
 
-## Custom integration
+ADB must already be enabled and authorized on the device.
 
-The Home Assistant integration is included at:
+### 3. Install the custom integration
 
+The Home Assistant integration is included in this repository:
+
+```text
 custom_components/rayhunter
+```
 
-For now, copy that directory to:
+For now, copy that directory into:
 
+```text
 /config/custom_components/rayhunter
+```
 
-and restart Home Assistant Core.
+Then restart Home Assistant Core.
 
-The integration can also be configured manually if Supervisor discovery is unavailable.
+A packaged integration installation method may be added later.
+
+### 4. Start Rayhunter Bridge
+
+Start the Rayhunter Bridge app.
+
+The app publishes Supervisor discovery information, allowing Home Assistant to discover the internal bridge address automatically.
+
+Manual integration configuration remains available as a fallback.
+
+---
 
 ## Bridge API
 
-The bridge exposes these internal endpoints:
+Rayhunter Bridge exposes a small read-only HTTP API internally to Home Assistant.
 
-GET /api/status
-GET /api/raw
-GET /healthz
+### `GET /api/status`
 
-/api/status provides the bounded state consumed by Home Assistant.
+Returns the bounded state used by the Home Assistant integration.
 
-/api/raw provides the complete upstream Rayhunter system-statistics and QMDL-manifest responses for diagnostics.
+Includes:
 
-## Repository layout
+- Rayhunter availability
+- recording state
+- warning state
+- battery state
+- system statistics
+- current recording metadata
+- Rayhunter runtime metadata
 
+### `GET /api/raw`
+
+Returns the upstream Rayhunter system-statistics and QMDL-manifest responses for diagnostics.
+
+Home Assistant does not continuously poll this endpoint because the historical manifest can grow over time.
+
+### `GET /healthz`
+
+Simple bridge health endpoint.
+
+Example:
+
+```json
+{
+  "ok": true,
+  "api_version": 1,
+  "bridge_version": "1.1.1"
+}
+```
+
+---
+
+## Failure Handling
+
+The bridge intentionally fails closed from Home Assistant's perspective.
+
+If any of the following become unavailable:
+
+- USB device
+- ADB
+- ADB forwarding
+- Rayhunter HTTP API
+- Rayhunter Bridge API
+
+the Home Assistant coordinator marks Rayhunter entities as **Unavailable**.
+
+A broken connection therefore cannot silently appear as a safe cellular environment.
+
+---
+
+## Repository Layout
+
+```text
 rayhunter_bridge/
 ├── repository.yaml
 ├── README.md
 ├── LICENSE
+│
 ├── custom_components/
 │   └── rayhunter/
+│       ├── __init__.py
+│       ├── api.py
+│       ├── binary_sensor.py
+│       ├── config_flow.py
+│       ├── const.py
+│       ├── coordinator.py
+│       ├── entity.py
+│       ├── manifest.json
+│       ├── sensor.py
+│       └── translations/
+│           └── en.json
+│
+├── docs/
+│   └── images/
+│
 └── rayhunter_bridge/
     ├── config.yaml
     ├── Dockerfile
     ├── README.md
     ├── rayhunter_bridge.py
     └── run.sh
+```
+
+---
 
 ## Versions
 
-Rayhunter Bridge app:       1.1.2
-Home Assistant integration: 0.3.2
-EFF Rayhunter tested:       0.12.0
+| Component | Version |
+|---|---:|
+| Rayhunter Bridge app | `1.1.2` |
+| Bridge API implementation | `1.1.1` |
+| Home Assistant integration | `0.3.2` |
+| Tested EFF Rayhunter | `0.12.0` |
 
-## Attribution
+---
 
-Rayhunter is developed by the Electronic Frontier Foundation:
+## Development Status
 
-https://github.com/EFForg/rayhunter
+The core integration is functional and has been tested end-to-end with a physical Orbic RC400L running Rayhunter.
 
-This project is independent and is not maintained or endorsed by EFF.
+Confirmed functionality includes:
+
+- USB detection
+- ADB connection
+- automatic ADB forwarding
+- Rayhunter API access
+- Home Assistant polling
+- recording state
+- device diagnostics
+- live warning detection
+- severity reporting
+- recovery to a safe state after starting a new recording
+
+Further cleanup and packaging improvements are ongoing.
+
+---
+
+## Rayhunter
+
+[Rayhunter](https://github.com/EFForg/rayhunter) is an open-source project from the Electronic Frontier Foundation for detecting potentially suspicious cellular-network behavior.
+
+This Home Assistant project is independent and is **not maintained or endorsed by the Electronic Frontier Foundation**.
+
+---
+
+## License
+
+See [LICENSE](LICENSE).
