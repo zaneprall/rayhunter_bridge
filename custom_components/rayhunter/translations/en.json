@@ -1,0 +1,31 @@
+{
+  "title": "Rayhunter",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to Rayhunter",
+        "description": "Connect Home Assistant to a Rayhunter Bridge.",
+        "data": {
+          "base_url": "Bridge URL"
+        },
+        "data_description": {
+          "base_url": "Internal URL for the Rayhunter Bridge. Normally this is discovered automatically when the Rayhunter Bridge app is installed."
+        }
+      },
+      "hassio_confirm": {
+        "title": "Set up Rayhunter",
+        "description": "The Rayhunter Bridge for {name} was discovered at {url}. Add it to Home Assistant?"
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to the Rayhunter Bridge.",
+      "unknown": "Unexpected error."
+    },
+    "abort": {
+      "already_configured": "This Rayhunter device is already configured.",
+      "cannot_connect": "The discovered Rayhunter Bridge could not be reached.",
+      "invalid_discovery_info": "The Rayhunter Bridge supplied invalid discovery information.",
+      "unknown": "Unexpected error while processing Rayhunter discovery."
+    }
+  }
+}
