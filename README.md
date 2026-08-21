@@ -12,7 +12,7 @@
 
 ## Overview
 
-**Rayhunter for Home Assistant** connects an EFF Rayhunter device (the orbic one. Sorry Europeans.) directly to Home Assistant OS.
+**Rayhunter for Home Assistant** connects an EFF Rayhunter device directly to Home Assistant OS. for cell phone transmission interception detection at home. 
 
 The project consists of two pieces:
 
