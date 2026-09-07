@@ -1,14 +1,13 @@
 # Rayhunter for Home Assistant
 
 <p align="center">
-  Home Assistant integration for the [Electronic Frontier Foundation Rayhunter](https://github.com/EFForg/rayhunter) running on an Orbic RC400L.
+  Home Assistant integration for the <a href="https://github.com/EFForg/rayhunter">Electronic Frontier Foundation Rayhunter</a> running on an Orbic RC400L.
 </p>
 
 <p align="center">
   USB/ADB connection · Native Home Assistant entities · No MQTT required
 </p>
 
----
 
 ## Overview
 
