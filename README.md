@@ -1,7 +1,7 @@
 # Rayhunter for Home Assistant
 
 <p align="center">
-  Home Assistant integration for the EFF Rayhunter running on an Orbic RC400L.
+  Home Assistant integration for the [Electronic Frontier Foundation Rayhunter](https://github.com/EFForg/rayhunter) running on an Orbic RC400L.
 </p>
 
 <p align="center">
