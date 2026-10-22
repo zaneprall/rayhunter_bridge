@@ -11,7 +11,7 @@
 
 ## Overview
 
-**Rayhunter for Home Assistant** connects an EFF Rayhunter device directly to Home Assistant OS. for cell phone transmission interception detection at home. 
+**Rayhunter for Home Assistant** connects an EFF Rayhunter device directly to Home Assistant OS to monitor potentially suspicious cellular-network behavior.
 
 The project consists of two pieces:
 
@@ -177,7 +177,7 @@ amd64
 ### 1. Install the Rayhunter Bridge app
 
 
-### Option A: Add this repository to the Home Assistant App Store
+#### Option A: Add this repository to the Home Assistant App Store
 
 In Home Assistant, open:
 
@@ -185,20 +185,26 @@ Settings → Apps → App Store → Repositories
 
 Add:
 
+```text
 https://github.com/zaneprall/rayhunter_bridge
+```
 
 Then install **Rayhunter Bridge**.
 
 
-### Option B: Clone the repository locally
+#### Option B: Clone the repository locally
 
 From the Home Assistant SSH/Terminal environment:
 
+```sh
 git clone https://github.com/zaneprall/rayhunter_bridge.git /addons/rayhunter-bridge
+```
 
 Then reload the Home Assistant App Store:
 
+```sh
 ha store reload
+```
 
 The local Rayhunter Bridge app should then appear in the App Store and can be installed normally.
 
@@ -211,21 +217,18 @@ ADB must already be enabled and authorized on the device.
 
 ### 3. Install the custom integration
 
-The Home Assistant integration is included in this repository:
+The Home Assistant integration is included in [custom_components/rayhunter](custom_components/rayhunter).
 
-```text
-custom_components/rayhunter
+Copy that directory to `/config/custom_components/rayhunter`. Installing the bridge app alone does not install the custom integration.
+
+If you cloned the repository using Option B, run:
+
+```sh
+mkdir -p /config/custom_components
+cp -a /addons/rayhunter-bridge/custom_components/rayhunter /config/custom_components/
 ```
-> [!WARNING]
-> these files must be moved to the following directory for the integration to work
-```text
-/config/custom_components/rayhunter
-```
-This can be done from the included terminal:
-```text
-cd /addons/rayhunter_bridge # navigate to the directory you have the program in.
-cp -a custom_components/rayhunter /config/custom_components/ #move the integration components into the correct directory
-```
+
+If you used Option A, [download the repository ZIP](https://github.com/zaneprall/rayhunter_bridge/archive/refs/heads/main.zip), extract it, and copy `custom_components/rayhunter` to the same destination.
 
 Then restart Home Assistant Core.
 
@@ -244,17 +247,21 @@ Manual integration configuration remains available as a fallback.
 
 The Rayhunter Bridge exposes a small read-only HTTP API on port `8099`.
 
+The examples below use the internal hostname for a local app installation, `local-rayhunter-bridge`. For an App Store repository installation, use the bridge hostname discovered by Home Assistant. Run these commands from an environment that can reach the app's internal network.
+
 ### Health check
 
 GET `/healthz`
 
 Example:
-```text
+```sh
 curl http://local-rayhunter-bridge:8099/healthz
 ```
 Example response:
 
+```json
 {"ok":true,"api_version":1,"bridge_version":"1.1.1"}
+```
 
 
 ### Current status
@@ -262,11 +269,11 @@ Example response:
 GET `/api/status`
 
 Example:
-```text
+```sh
 curl http://local-rayhunter-bridge:8099/api/status
 ```
 Pretty-printed with jq:
-```text
+```sh
 curl -s http://local-rayhunter-bridge:8099/api/status | jq
 ```
 This endpoint returns the bounded state used by Home Assistant, including:
@@ -280,7 +287,7 @@ This endpoint returns the bounded state used by Home Assistant, including:
 - current recording metadata
 
 Example response:
-```text
+```json
 {
   "api_version": 1,
   "bridge_version": "1.1.1",
@@ -356,6 +363,7 @@ Example response:
     "/api/qmdl-manifest",
     "/api/analysis-report/live"
   ]
+}
 ```
 
 ### Raw Rayhunter data
@@ -363,7 +371,7 @@ Example response:
 GET `/api/raw`
 
 Example:
-```text
+```sh
 curl -s http://local-rayhunter-bridge:8099/api/raw | jq
 ```
 This endpoint returns the full upstream responses from:
@@ -375,7 +383,7 @@ Unlike `/api/status`, this data is not bounded and may grow as additional record
 
 
 ### Check only warning state
-```text
+```sh
 curl -s http://local-rayhunter-bridge:8099/api/status | jq '{
   active_warning,
   severity,
@@ -386,7 +394,7 @@ curl -s http://local-rayhunter-bridge:8099/api/status | jq '{
 ```
 
 ### Check recording state
-```text
+```sh
 curl -s http://local-rayhunter-bridge:8099/api/status | jq '{
   recording,
   current_recording,
@@ -396,7 +404,7 @@ curl -s http://local-rayhunter-bridge:8099/api/status | jq '{
 ```
 
 ### Check battery and system health
-```text
+```sh
 curl -s http://local-rayhunter-bridge:8099/api/status | jq '{
   battery_level,
   plugged_in,
@@ -406,7 +414,7 @@ curl -s http://local-rayhunter-bridge:8099/api/status | jq '{
 ```
 
 ### Check Rayhunter version
-```text
+```sh
 curl -s http://local-rayhunter-bridge:8099/api/status | jq '{
   rayhunter_version,
   system_os,
@@ -452,8 +460,8 @@ rayhunter_bridge/
 │       └── translations/
 │           └── en.json
 │
-├── docs/
-│   └── images/
+├── Deviceinfo.png
+├── tool.png
 │
 └── rayhunter_bridge/
     ├── config.yaml
@@ -480,7 +488,7 @@ rayhunter_bridge/
 
 The core integration is functional and has been tested end-to-end with a physical Orbic RC400L running Rayhunter.
 
-current functionality includes:
+Current functionality includes:
 
 - USB detection
 - ADB connection
@@ -491,14 +499,12 @@ current functionality includes:
 - device diagnostics
 - live warning detection
 - severity reporting
-- recovery to a safe state after starting a new recording
-- recovers from hotplugging the orbic
+- warning-state reset after starting a new recording
+- recovery after reconnecting the Orbic
 
 
-If you are in Europe, The middle East, or Africa and looking to get a similar configuration working on the TP-Link M7350, please contact me,
-I'd love to contribute however I can. 
+If you are in Europe, the Middle East, or Africa and want to help test or donate a TP-Link M7350 for development, please [open an issue](https://github.com/zaneprall/rayhunter_bridge/issues).
 
-if you happen to have a TP-Link M7350 and are willing to donate the device in order for me to support it, please reach out. 
 ## Rayhunter
 
 [Rayhunter](https://github.com/EFForg/rayhunter) is an open-source project from the Electronic Frontier Foundation for detecting potentially suspicious cellular-network behavior.
