@@ -12,3 +12,5 @@ The app manages:
 - Home Assistant discovery
 
 MQTT is not required.
+
+Install the companion custom integration to expose Rayhunter entities in Home Assistant. See the [installation guide](https://github.com/zaneprall/rayhunter_bridge#installation) for both components.
